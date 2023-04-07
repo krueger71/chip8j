@@ -1,5 +1,7 @@
 package io.github.krueger71.chip8j;
 
+import java.util.logging.Logger;
+
 /**
  * Chip8-model that is run by calling the step()-function. Input is provided by setting the keyboard status true/false
  * whenever key is pressed/not pressed. Sound should play whenever the st-register is non-zero. A bitmap display should
@@ -10,55 +12,57 @@ class Chip8 {
     /**
      * Memory size in bytes
      */
-    public static final int MEMORY_SIZE = 4096;
+    public static final short MEMORY_SIZE = 4096;
     /**
      * Program start
      */
-    public static final int PROGRAM_START = 0x200;
+    public static final short PROGRAM_START = 0x200;
     /**
      * Number of general purpose registers
      */
-    public static final int NUMBER_OF_REGISTERS = 16;
+    public static final byte NUMBER_OF_REGISTERS = 16;
     /**
      * Size of stack
      */
-    public static final int STACK_SIZE = 16;
+    public static final byte STACK_SIZE = 16;
     /**
      * Width of display in pixels
      */
-    public static final int DISPLAY_WIDTH = 64;
+    public static final byte DISPLAY_WIDTH = 64;
     /**
      * Height of display in pixels
      */
-    public static final int DISPLAY_HEIGHT = 32;
+    public static final byte DISPLAY_HEIGHT = 32;
     /**
      * Size of fonts in bytes
      */
-    public static final int FONTS_SIZE = 16 * 5;
+    public static final byte FONTS_SIZE = 16 * 5;
     /**
      * Default fonts
      */
-    public static final char[] FONTS = {0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
-        0x20, 0x60, 0x20, 0x20, 0x70, // 1
-        0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
-        0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
-        0x90, 0x90, 0xF0, 0x10, 0x10, // 4
-        0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
-        0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
-        0xF0, 0x10, 0x20, 0x40, 0x40, // 7
-        0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
-        0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
-        0xF0, 0x90, 0xF0, 0x90, 0x90, // A
-        0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
-        0xF0, 0x80, 0x80, 0x80, 0xF0, // C
-        0xE0, 0x90, 0x90, 0x90, 0xE0, // D
-        0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
-        0xF0, 0x80, 0xF0, 0x80, 0x80, // F
+    public static final byte[] FONTS = {
+        (byte) 0xF0, (byte) 0x90, (byte) 0x90, (byte) 0x90, (byte) 0xF0, // 0
+        (byte) 0x20, (byte) 0x60, (byte) 0x20, (byte) 0x20, (byte) 0x70, // 1
+        (byte) 0xF0, (byte) 0x10, (byte) 0xF0, (byte) 0x80, (byte) 0xF0, // 2
+        (byte) 0xF0, (byte) 0x10, (byte) 0xF0, (byte) 0x10, (byte) 0xF0, // 3
+        (byte) 0x90, (byte) 0x90, (byte) 0xF0, (byte) 0x10, (byte) 0x10, // 4
+        (byte) 0xF0, (byte) 0x80, (byte) 0xF0, (byte) 0x10, (byte) 0xF0, // 5
+        (byte) 0xF0, (byte) 0x80, (byte) 0xF0, (byte) 0x90, (byte) 0xF0, // 6
+        (byte) 0xF0, (byte) 0x10, (byte) 0x20, (byte) 0x40, (byte) 0x40, // 7
+        (byte) 0xF0, (byte) 0x90, (byte) 0xF0, (byte) 0x90, (byte) 0xF0, // 8
+        (byte) 0xF0, (byte) 0x90, (byte) 0xF0, (byte) 0x10, (byte) 0xF0, // 9
+        (byte) 0xF0, (byte) 0x90, (byte) 0xF0, (byte) 0x90, (byte) 0x90, // A
+        (byte) 0xE0, (byte) 0x90, (byte) 0xE0, (byte) 0x90, (byte) 0xE0, // B
+        (byte) 0xF0, (byte) 0x80, (byte) 0x80, (byte) 0x80, (byte) 0xF0, // C
+        (byte) 0xE0, (byte) 0x90, (byte) 0x90, (byte) 0x90, (byte) 0xE0, // D
+        (byte) 0xF0, (byte) 0x80, (byte) 0xF0, (byte) 0x80, (byte) 0xF0, // E
+        (byte) 0xF0, (byte) 0x80, (byte) 0xF0, (byte) 0x80, (byte) 0x80, // F
     };
     /**
      * Size of the keyboard
      */
-    public static final int KEYBOARD_SIZE = 16;
+    public static final byte KEYBOARD_SIZE = 16;
+    private static final Logger log = Logger.getLogger(Chip8.class.getName());
     /**
      * Display "buffer" output as 2-d array of bool
      */
@@ -74,7 +78,7 @@ class Chip8 {
     /**
      * RAM
      */
-    private final char[] memory;
+    private final byte[] memory;
     /**
      * General purpose registers
      */
@@ -82,15 +86,19 @@ class Chip8 {
     /**
      * Stack
      */
-    private final int[] stack;
+    private final char[] stack;
+    /**
+     * Stack pointer
+     */
+    private final byte sp;
     /**
      * Delay timer register
      */
-    char dt;
+    byte dt;
     /**
      * Sound timer register
      */
-    char st;
+    byte st;
     /**
      * Display has been updated. Redraw the display on target and set to false
      */
@@ -98,18 +106,14 @@ class Chip8 {
     /**
      * Index register
      */
-    private int i;
+    private char i;
     /**
      * Program counter
      */
-    private int pc;
-    /**
-     * Stack pointer
-     */
-    private final int sp;
+    private char pc;
 
-    Chip8(char[] program, Quirks quirks) {
-        memory = new char[MEMORY_SIZE];
+    Chip8(byte[] program, Quirks quirks) {
+        memory = new byte[MEMORY_SIZE];
 
         // Load fonts from address 0x0000
         System.arraycopy(FONTS, 0, memory, 0, FONTS_SIZE);
@@ -123,7 +127,7 @@ class Chip8 {
         i = 0;
         pc = PROGRAM_START;
         sp = 0;
-        stack = new int[STACK_SIZE];
+        stack = new char[STACK_SIZE];
         display = new boolean[DISPLAY_HEIGHT][DISPLAY_WIDTH];
         display_update = false;
         keyboard = new boolean[KEYBOARD_SIZE];
@@ -134,15 +138,15 @@ class Chip8 {
      * Fetch, decode and execute one instruction
      */
     void step() {
-        int instr = fetch();
+        var instr = fetch();
         execute(instr);
     }
 
     /**
      * Fetch an instruction and increment the program counter
      */
-    int fetch() {
-        int instr = (((int) memory[pc]) << 8) | ((int) memory[1 + pc]);
+    char fetch() {
+        char instr = (char) ((memory[pc] & 0xFF) << 8 | (memory[1 + pc] & 0xFF));
         pc += 2;
 
         return instr;
@@ -151,13 +155,15 @@ class Chip8 {
     /**
      * Decode and execute instruction
      */
-    void execute(int instr) {
-        var i = ((instr & 0xF000) >> 12);
-        var x = ((instr & 0x0F00) >> 8);
-        var y = ((instr & 0x00F0) >> 4);
-        var n = (instr & 0x000F);
-        var nn = (instr & 0x00FF);
-        var nnn = (instr & 0x0FFF);
+    void execute(char instr) {
+        var i = (byte) ((instr & 0xF000) >> 12);
+        var x = (byte) ((instr & 0x0F00) >> 8);
+        var y = (byte) ((instr & 0x00F0) >> 4);
+        var n = (byte) (instr & 0x000F);
+        var nn = (byte) (instr & 0x00FF);
+        var nnn = (char) (instr & 0x0FFF);
+
+        //log.info(() -> "i=%x x=%x y=%x n=%x nn=%x nnn=%x".formatted(i, x, y, n, nn, (int) nnn));
 
         switch (i) {
             case 0x00 -> {
@@ -195,8 +201,8 @@ class Chip8 {
             case 0xD -> draw(x, y, n);
             case 0xE -> {
                 switch (nn) {
-                    case 0x9E -> skp(x);
-                    case 0xA1 -> sknp(x);
+                    case (byte) 0x9E -> skp(x);
+                    case (byte) 0xA1 -> sknp(x);
                     default -> err(instr);
                 }
             }
@@ -218,47 +224,47 @@ class Chip8 {
         }
     }
 
-    private void lreg(int x) {
+    private void lreg(byte x) {
         throw new UnsupportedOperationException();
     }
 
-    private void sreg(int x) {
+    private void sreg(byte x) {
         throw new UnsupportedOperationException();
     }
 
-    private void bcd(int x) {
+    private void bcd(byte x) {
         throw new UnsupportedOperationException();
     }
 
-    private void font(int x) {
+    private void font(byte x) {
         throw new UnsupportedOperationException();
     }
 
-    private void addi(int x) {
+    private void addi(byte x) {
         throw new UnsupportedOperationException();
     }
 
-    private void ldst(int x) {
+    private void ldst(byte x) {
         throw new UnsupportedOperationException();
     }
 
-    private void ldtt(int x) {
+    private void ldtt(byte x) {
         throw new UnsupportedOperationException();
     }
 
-    private void ldkp(int x) {
+    private void ldkp(byte x) {
         throw new UnsupportedOperationException();
     }
 
-    private void ldft(int x) {
+    private void ldft(byte x) {
         throw new UnsupportedOperationException();
     }
 
-    private void sknp(int x) {
+    private void sknp(byte x) {
         throw new UnsupportedOperationException();
     }
 
-    private void skp(int x) {
+    private void skp(byte x) {
         throw new UnsupportedOperationException();
     }
 
@@ -270,7 +276,7 @@ class Chip8 {
      * @param y y coord
      * @param n height of sprite
      */
-    private void draw(int x, int y, int n) {
+    private void draw(byte x, byte y, byte n) {
         var px = registers[x] % DISPLAY_WIDTH;
         var py = registers[y] % DISPLAY_HEIGHT;
         registers[0xF] = 0;
@@ -303,11 +309,11 @@ class Chip8 {
         }
     }
 
-    private void rnd(int x, int nn) {
+    private void rnd(byte x, byte nn) {
         throw new UnsupportedOperationException();
     }
 
-    private void jmpz(int nnn) {
+    private void jmpz(char nnn) {
         throw new UnsupportedOperationException();
     }
 
@@ -316,11 +322,11 @@ class Chip8 {
      *
      * @param nnn address
      */
-    private void ldi(int nnn) {
+    private void ldi(char nnn) {
         i = nnn;
     }
 
-    private void skne(int x, int y) {
+    private void skne(byte x, byte y) {
         throw new UnsupportedOperationException();
     }
 
@@ -328,39 +334,39 @@ class Chip8 {
         throw new UnsupportedOperationException(Integer.toUnsignedString(instr, 16));
     }
 
-    private void shl(int x, int y) {
+    private void shl(byte x, byte y) {
         throw new UnsupportedOperationException();
     }
 
-    private void subr(int x, int y) {
+    private void subr(byte x, byte y) {
         throw new UnsupportedOperationException();
     }
 
-    private void shr(int x, int y) {
+    private void shr(byte x, byte y) {
         throw new UnsupportedOperationException();
     }
 
-    private void sub(int x, int y) {
+    private void sub(byte x, byte y) {
         throw new UnsupportedOperationException();
     }
 
-    private void add(int x, int y) {
+    private void add(byte x, byte y) {
         throw new UnsupportedOperationException();
     }
 
-    private void xor(int x, int y) {
+    private void xor(byte x, byte y) {
         throw new UnsupportedOperationException();
     }
 
-    private void and(int x, int y) {
+    private void and(byte x, byte y) {
         throw new UnsupportedOperationException();
     }
 
-    private void or(int x, int y) {
+    private void or(byte x, byte y) {
         throw new UnsupportedOperationException();
     }
 
-    private void ld(int x, int y) {
+    private void ld(byte x, byte y) {
         throw new UnsupportedOperationException();
     }
 
@@ -370,7 +376,7 @@ class Chip8 {
      * @param x  register
      * @param nn byte
      */
-    private void addb(int x, int nn) {
+    private void addb(byte x, byte nn) {
         registers[x] = (char) (registers[x] + nn);
     }
 
@@ -380,23 +386,23 @@ class Chip8 {
      * @param x  byte
      * @param nn register
      */
-    private void ldb(int x, int nn) {
+    private void ldb(byte x, byte nn) {
         registers[x] = (char) nn;
     }
 
-    private void ske(int x, int y) {
+    private void ske(byte x, byte y) {
         throw new UnsupportedOperationException();
     }
 
-    private void skneb(int x, int nn) {
+    private void skneb(byte x, byte nn) {
         throw new UnsupportedOperationException();
     }
 
-    private void skeb(int x, int nn) {
+    private void skeb(byte x, byte nn) {
         throw new UnsupportedOperationException();
     }
 
-    private void call(int nnn) {
+    private void call(char nnn) {
         throw new UnsupportedOperationException();
     }
 
@@ -405,11 +411,11 @@ class Chip8 {
      *
      * @param nnn address
      */
-    private void jmp(int nnn) {
+    private void jmp(char nnn) {
         pc = nnn;
     }
 
-    private void sys(int nnn) {
+    private void sys(char nnn) {
         throw new UnsupportedOperationException();
     }
 
