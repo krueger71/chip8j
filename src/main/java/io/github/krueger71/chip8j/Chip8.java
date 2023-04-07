@@ -1,7 +1,5 @@
 package io.github.krueger71.chip8j;
 
-import java.util.Arrays;
-
 /**
  * Chip8-model that is run by calling the step()-function. Input is provided by setting the keyboard status true/false
  * whenever key is pressed/not pressed. Sound should play whenever the st-register is non-zero. A bitmap display should
@@ -61,8 +59,18 @@ class Chip8 {
      * Size of the keyboard
      */
     public static final int KEYBOARD_SIZE = 16;
-
-
+    /**
+     * Display "buffer" output as 2-d array of bool
+     */
+    final boolean[][] display;
+    /**
+     * Keyboard input as array of bool
+     */
+    final boolean[] keyboard;
+    /**
+     * Options/quirks
+     */
+    final Quirks quirks;
     /**
      * RAM
      */
@@ -72,6 +80,10 @@ class Chip8 {
      */
     private final char[] registers;
     /**
+     * Stack
+     */
+    private final int[] stack;
+    /**
      * Delay timer register
      */
     char dt;
@@ -79,6 +91,10 @@ class Chip8 {
      * Sound timer register
      */
     char st;
+    /**
+     * Display has been updated. Redraw the display on target and set to false
+     */
+    boolean display_update;
     /**
      * Index register
      */
@@ -90,38 +106,16 @@ class Chip8 {
     /**
      * Stack pointer
      */
-    private int sp;
-    /**
-     * Stack
-     */
-    private final int[] stack;
-    /**
-     * Display "buffer" output as 2-d array of bool
-     */
-    final boolean[][] display;
-    /**
-     * Display has been updated. Redraw the display on target and set to false
-     */
-    boolean display_update;
-    /**
-     * Keyboard input as array of bool
-     */
-    final boolean[] keyboard;
-    /**
-     * Options/quirks
-     */
-    final Quirks quirks;
+    private final int sp;
 
     Chip8(char[] program, Quirks quirks) {
         memory = new char[MEMORY_SIZE];
 
         // Load fonts from address 0x0000
-        for (int i = 0; i < FONTS_SIZE; i++)
-            memory[i] = FONTS[i];
+        System.arraycopy(FONTS, 0, memory, 0, FONTS_SIZE);
 
         // Load program from PROGRAM_START
-        for (int i = 0; i < program.length; i++)
-            memory[PROGRAM_START + i] = program[i];
+        System.arraycopy(program, 0, memory, 512, program.length);
 
         registers = new char[NUMBER_OF_REGISTERS];
         dt = 0;
@@ -373,7 +367,7 @@ class Chip8 {
     /**
      * 7xkk - ADDB Vx, byte. Add byte to VX (without overflow status).
      *
-     * @param x register
+     * @param x  register
      * @param nn byte
      */
     private void addb(int x, int nn) {
@@ -408,6 +402,7 @@ class Chip8 {
 
     /**
      * 1nnn - JMP addr. Jump to address.
+     *
      * @param nnn address
      */
     private void jmp(int nnn) {
