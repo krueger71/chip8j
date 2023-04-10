@@ -4,11 +4,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.logging.Logger;
 
 /**
  * Runs a Chip8-instance with JDK built-in support for graphics (java.awt) and sound (javax.sound)
  */
 class EmuJdk {
+    private static final Logger log = Logger.getLogger(EmuJdk.class.getName());
     public static final int INSTRUCTIONS_PER_FRAME = 20;
     public static final int SCALE = 10;
     private final Chip8 chip8;
@@ -20,8 +22,8 @@ class EmuJdk {
     /**
      * Map keycode to Chip8 keycode. Works best with QWERTY-layouts.
      *
-     * @param keyCode
-     * @return
+     * @param keyCode key code on the outside
+     * @return key code for Chip8
      */
     private static int keymap(int keyCode) {
         return switch (keyCode) {
@@ -133,7 +135,8 @@ class EmuJdk {
                 try {
                     Thread.sleep((FRAME_TIME - elapsedTime) / 1000_000);
                 } catch (InterruptedException e) {
-                    // Ignore
+                    log.warning(() -> "%s".formatted(e.getMessage()));
+                    Thread.currentThread().interrupt();
                 }
             }
         }

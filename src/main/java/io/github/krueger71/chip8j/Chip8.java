@@ -1,5 +1,6 @@
 package io.github.krueger71.chip8j;
 
+import java.util.Arrays;
 import java.util.Random;
 import java.util.logging.Logger;
 
@@ -160,10 +161,6 @@ class Chip8 {
         return quirks;
     }
 
-    public boolean[] getKeyboard() {
-        return keyboard;
-    }
-
     public boolean[][] getDisplay() {
         return display;
     }
@@ -235,7 +232,7 @@ class Chip8 {
         var nn = (instr & 0x00FF);
         var nnn = (instr & 0x0FFF);
 
-        //log.info(() -> "instr=%X i=%X x=%X y=%X n=%X nn=%X nnn=%X".formatted((int) instr, i, x, y, n, nn, (int) nnn));
+        log.fine(() -> "instr=%X i=%X x=%X y=%X n=%X nn=%X nnn=%X".formatted((int) instr, i, x, y, n, nn, nnn));
 
         switch (i) {
             case 0x00 -> {
@@ -511,8 +508,8 @@ class Chip8 {
     /**
      * Unsupported instruction
      *
-     * @param instr
-     * @throws UnsupportedOperationException
+     * @param instr instruction
+     * @throws UnsupportedOperationException for unused instruction
      */
     private void err(int instr) {
         throw new UnsupportedOperationException(Integer.toUnsignedString(instr, 16));
@@ -533,8 +530,8 @@ class Chip8 {
     /**
      * 8xy7 - SUBR Vx, Vy. Set VX = VY - VX with borrow status in VF (not borrow means set). Remember that VX can be the same as VF.
      *
-     * @param x
-     * @param y
+     * @param x register
+     * @param y register
      */
     private void subr(int x, int y) {
         var result = getRegister(y) - getRegister(x);
@@ -546,8 +543,8 @@ class Chip8 {
     /**
      * 8xy6 - SHR Vx. Shift VX right with bit 0 before shift in VF. Remember that VX can be the same as VF. Instruction with quirks.
      *
-     * @param x
-     * @param y
+     * @param x register
+     * @param y register
      */
     private void shr(int x, int y) {
         var val = quirks.shifting() ? getRegister(x) : getRegister(y);
@@ -704,9 +701,9 @@ class Chip8 {
     /**
      * 0nnn - SYS addr. Jump to machine code at address (unused in practice).
      *
-     * @param nnn address
+     * @param ignoredNnn address
      */
-    private void sys(int nnn) {
+    private void sys(int ignoredNnn) {
     }
 
     /**
@@ -722,8 +719,7 @@ class Chip8 {
      */
     private void cls() {
         for (var y = 0; y < DISPLAY_HEIGHT; y++)
-            for (var x = 0; x < DISPLAY_WIDTH; x++)
-                display[y][x] = false;
+            Arrays.fill(display[y], false);
         setDisplayUpdate(true);
     }
 
