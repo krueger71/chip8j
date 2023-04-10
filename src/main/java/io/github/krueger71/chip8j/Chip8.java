@@ -114,6 +114,7 @@ class Chip8 {
      * Program counter
      */
     private char pc;
+
     Chip8(byte[] program, Quirks quirks) {
         rand = new Random();
         memory = new byte[MEMORY_SIZE];

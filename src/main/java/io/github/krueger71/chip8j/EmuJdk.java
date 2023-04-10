@@ -1,5 +1,6 @@
 package io.github.krueger71.chip8j;
 
+import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
@@ -10,13 +11,16 @@ import java.util.logging.Logger;
  * Runs a Chip8-instance with JDK built-in support for graphics (java.awt) and sound (javax.sound)
  */
 class EmuJdk {
-    private static final Logger log = Logger.getLogger(EmuJdk.class.getName());
     public static final int INSTRUCTIONS_PER_FRAME = 20;
     public static final int SCALE = 10;
+    public static final int FPS = 60;
+    private static final Logger log = Logger.getLogger(EmuJdk.class.getName());
     private final Chip8 chip8;
+    private final Sound sound;
 
     EmuJdk(Chip8 chip8) {
         this.chip8 = chip8;
+        this.sound = new Sound();
     }
 
     /**
@@ -97,7 +101,6 @@ class EmuJdk {
             }
         });
 
-        final int FPS = 60;
         final int FRAME_TIME = 1000_000_000 / FPS;
 
         while (true) {
@@ -119,8 +122,10 @@ class EmuJdk {
 
             // Decrement sound timer if non-zero and play sound
             if (chip8.getSt() > 0) {
-                // Play sound
+                sound.play();
                 chip8.setSt(chip8.getSt() - 1);
+            } else {
+                sound.stop();
             }
 
             // Draw display if Chip8 indicates display is updated
@@ -138,6 +143,56 @@ class EmuJdk {
                     log.warning(() -> "%s".formatted(e.getMessage()));
                     Thread.currentThread().interrupt();
                 }
+            }
+        }
+    }
+
+    static class Sound {
+        private final Clip clip;
+        boolean playing;
+
+        public Sound() {
+            this.playing = false;
+            int sampleRate = 44100;
+            AudioFormat format = new AudioFormat(sampleRate, 8, 1, true, true);
+            DataLine.Info info = new DataLine.Info(Clip.class, format);
+            try {
+                clip = (Clip) AudioSystem.getLine(info);
+            } catch (LineUnavailableException e) {
+                throw new RuntimeException(e);
+            }
+
+            int durationMs = 5000; // duration of the sound in milliseconds
+            int frequencyHz = 220; // frequency of the sound in Hertz
+            int numSamples = durationMs * sampleRate / 1000;
+            byte[] buffer = new byte[numSamples];
+
+            for (int i = 0; i < numSamples; i++) {
+                double angle = 2.0 * Math.PI * i * frequencyHz / sampleRate;
+                buffer[i] = (byte) (Math.sin(angle) > 0 ? 127 : -128);
+            }
+
+            clip.setFramePosition(0);
+            try {
+                clip.open(format, buffer, 0, buffer.length);
+            } catch (LineUnavailableException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        void play() {
+            if (!playing) {
+                clip.setFramePosition(0);
+                clip.start();
+                playing = true;
+            }
+
+        }
+
+        void stop() {
+            if (playing) {
+                clip.stop();
+                playing = false;
             }
         }
     }
