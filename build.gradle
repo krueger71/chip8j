@@ -2,21 +2,28 @@ plugins {
     id 'application'
 }
 
-sourceCompatibility '19'
-group 'io.github.krueger71'
-version 'git describe --match=v* --dirty'.execute().text.trim()
-mainClassName 'io.github.krueger71.chip8j.Main'
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+group = 'io.github.krueger71'
+version = 'git describe --match=v* --dirty'.execute().text.trim()
+
+application {
+    mainClass = 'io.github.krueger71.chip8j.Main'
+}
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5+'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5+'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.+'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-test {
+tasks.named('test', Test) {
     useJUnitPlatform()
 }
-
