@@ -103,6 +103,7 @@ class EmuJdk {
 
         final int FRAME_TIME = 1000_000_000 / FPS;
 
+        //noinspection InfiniteLoopStatement
         while (true) {
             long startTime = System.nanoTime();
 
@@ -138,6 +139,7 @@ class EmuJdk {
             long elapsedTime = endTime - startTime;
             if (elapsedTime < FRAME_TIME) {
                 try {
+                    //noinspection BusyWait
                     Thread.sleep((FRAME_TIME - elapsedTime) / 1000_000);
                 } catch (InterruptedException e) {
                     log.warning(() -> "%s".formatted(e.getMessage()));

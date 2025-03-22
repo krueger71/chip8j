@@ -704,6 +704,7 @@ class Chip8 {
      *
      * @param ignoredNnn address
      */
+    @SuppressWarnings("EmptyMethod")
     private void sys(int ignoredNnn) {
     }
 

@@ -31,8 +31,8 @@ class Chip8Test {
         chip8.setRegister(2, 0xEF);
         chip8.execute((char) 0xF255);
         var mem = chip8.getMemory();
-        assertEquals(Byte.toUnsignedInt(mem[0]), 0xAB);
-        assertEquals(Byte.toUnsignedInt(mem[1]), 0xCD);
-        assertEquals(Byte.toUnsignedInt(mem[2]), 0xEF);
+        assertEquals(0xAB, Byte.toUnsignedInt(mem[0]));
+        assertEquals(0xCD, Byte.toUnsignedInt(mem[1]));
+        assertEquals(0xEF, Byte.toUnsignedInt(mem[2]));
     }
 }
