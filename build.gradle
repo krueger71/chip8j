@@ -9,7 +9,7 @@ java {
 }
 
 group = 'io.github.krueger71'
-version = 'git describe --match=v* --dirty'.execute().text.trim()
+version = 'git describe --match=[0-9]* --dirty'.execute().text.trim()
 
 application {
     mainClass = 'io.github.krueger71.chip8j.Main'
