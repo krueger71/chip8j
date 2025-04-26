@@ -71,7 +71,7 @@ class EmuJdk {
                 for (var y = 0; y < Chip8.DISPLAY_HEIGHT; y++)
                     for (var x = 0; x < Chip8.DISPLAY_WIDTH; x++)
                         if (display[y][x]) {
-                            graphics.drawLine(x, y, x, y);  // There is no drawPoint-primitive
+                            graphics.fillRect(x, y, 1, 1);
                         }
             }
         };
@@ -165,7 +165,7 @@ class EmuJdk {
             }
 
             int durationMs = 5000; // duration of the sound in milliseconds
-            int frequencyHz = 220; // frequency of the sound in Hertz
+            int frequencyHz = 432; // frequency of the sound in Hertz
             int numSamples = durationMs * sampleRate / 1000;
             byte[] buffer = new byte[numSamples];
 
