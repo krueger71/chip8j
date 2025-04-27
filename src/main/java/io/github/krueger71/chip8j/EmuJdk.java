@@ -135,6 +135,8 @@ class EmuJdk {
                 chip8.setDisplayUpdate(false); // Chip8 will set this to true whenever something changes on screen
             }
 
+            Toolkit.getDefaultToolkit().sync(); // Sync the display
+
             long endTime = System.nanoTime();
             long elapsedTime = endTime - startTime;
             if (elapsedTime < FRAME_TIME) {
@@ -151,10 +153,8 @@ class EmuJdk {
 
     static class Sound {
         private final Clip clip;
-        boolean playing;
 
         public Sound() {
-            this.playing = false;
             int sampleRate = 44100;
             AudioFormat format = new AudioFormat(sampleRate, 8, 1, true, true);
             DataLine.Info info = new DataLine.Info(Clip.class, format);
@@ -164,7 +164,7 @@ class EmuJdk {
                 throw new RuntimeException(e);
             }
 
-            int durationMs = 5000; // duration of the sound in milliseconds
+            int durationMs = 8192; // duration of the sound in milliseconds
             int frequencyHz = 432; // frequency of the sound in Hertz
             int numSamples = durationMs * sampleRate / 1000;
             byte[] buffer = new byte[numSamples];
@@ -174,7 +174,6 @@ class EmuJdk {
                 buffer[i] = (byte) (Math.sin(angle) > 0 ? 127 : -128);
             }
 
-            clip.setFramePosition(0);
             try {
                 clip.open(format, buffer, 0, buffer.length);
             } catch (LineUnavailableException e) {
@@ -183,18 +182,18 @@ class EmuJdk {
         }
 
         void play() {
-            if (!playing) {
+            if (!clip.isRunning()) {
                 clip.setFramePosition(0);
+                clip.setLoopPoints(0, -1);
+                clip.loop(Clip.LOOP_CONTINUOUSLY);
                 clip.start();
-                playing = true;
             }
 
         }
 
         void stop() {
-            if (playing) {
+            if (clip.isRunning()) {
                 clip.stop();
-                playing = false;
             }
         }
     }
