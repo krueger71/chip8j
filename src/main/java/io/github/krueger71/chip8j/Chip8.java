@@ -584,10 +584,9 @@ class Chip8 {
      * @param y register
      */
     private void xor(int x, int y) {
+        setRegister(x, getRegister(x) ^ getRegister(y));
         if (quirks.vfReset())
             setRegister(0xF, 0);
-
-        setRegister(x, getRegister(x) ^ getRegister(y));
     }
 
     /**
@@ -597,10 +596,9 @@ class Chip8 {
      * @param y register
      */
     private void and(int x, int y) {
+        setRegister(x, getRegister(x) & getRegister(y));
         if (quirks.vfReset())
             setRegister(0xF, 0);
-
-        setRegister(x, getRegister(x) & getRegister(y));
     }
 
     /**
@@ -610,10 +608,9 @@ class Chip8 {
      * @param y register
      */
     private void or(int x, int y) {
+        setRegister(x, getRegister(x) | getRegister(y));
         if (quirks.vfReset())
             setRegister(0xF, 0);
-
-        setRegister(x, getRegister(x) | getRegister(y));
     }
 
     /**
