@@ -171,7 +171,7 @@ class EmuJdk {
 
             for (int i = 0; i < numSamples; i++) {
                 double angle = 2.0 * Math.PI * i * frequencyHz / sampleRate;
-                buffer[i] = (byte) (Math.sin(angle) > 0 ? 127 : -128);
+                buffer[i] = (byte) (Math.sin(angle) > 0 ? 31 : -32);
             }
 
             try {
