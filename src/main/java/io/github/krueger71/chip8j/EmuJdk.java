@@ -8,11 +8,12 @@ import java.awt.event.KeyEvent;
 import java.util.logging.Logger;
 
 /**
- * Runs a Chip8-instance with JDK built-in support for graphics (java.awt) and sound (javax.sound)
+ * Runs a Chip8-instance with JDK built-in support for graphics (java.awt) and
+ * sound (javax.sound)
  */
 class EmuJdk {
     public static final int INSTRUCTIONS_PER_FRAME = 20;
-    public static final int SCALE = 10;
+    public static final int SCALE = 30;
     public static final int FPS = 60;
     private static final Logger log = Logger.getLogger(EmuJdk.class.getName());
     private final Chip8 chip8;
@@ -52,13 +53,17 @@ class EmuJdk {
     }
 
     /**
-     * Run initializes graphics and sound as well as starts a loop that runs the Chip8 instance. Exits on exception or
+     * Run initializes graphics and sound as well as starts a loop that runs the
+     * Chip8 instance. Exits on exception or
      * user quitting.
      */
     void run() {
         var frame = new JFrame("Chip8 Emulator");
 
         var component = new JComponent() {
+
+            private boolean skala;
+
             @Override
             public void paint(Graphics g) {
                 var graphics = (Graphics2D) g;
@@ -66,13 +71,27 @@ class EmuJdk {
                 graphics.fillRect(0, 0, this.getWidth(), this.getHeight());
                 graphics.setColor(Color.LIGHT_GRAY);
                 graphics.scale(SCALE, SCALE);
+
                 var display = chip8.getDisplay();
 
-                for (var y = 0; y < Chip8.DISPLAY_HEIGHT; y++)
-                    for (var x = 0; x < Chip8.DISPLAY_WIDTH; x++)
+                for (var y = 0; y < Chip8.DISPLAY_HEIGHT; y++) {
+                    for (var x = 0; x < Chip8.DISPLAY_WIDTH; x++) {
                         if (display[y][x]) {
                             graphics.fillRect(x, y, 1, 1);
                         }
+                    }
+                }
+
+                graphics.scale(1.0/SCALE, 1.0/SCALE);
+                graphics.setColor(Color.DARK_GRAY);
+
+                for (var y = 0; y < (Chip8.DISPLAY_HEIGHT * SCALE); y += SCALE) {
+                    graphics.drawLine(0, y, Chip8.DISPLAY_WIDTH * SCALE, y);
+                }
+
+                for (var x = 0; x < (Chip8.DISPLAY_WIDTH * SCALE); x += SCALE) {
+                    graphics.drawLine(x, 0, x, Chip8.DISPLAY_HEIGHT * SCALE);
+                }
             }
         };
 
@@ -103,7 +122,7 @@ class EmuJdk {
 
         final int FRAME_TIME = 1000_000_000 / FPS;
 
-        //noinspection InfiniteLoopStatement
+        // noinspection InfiniteLoopStatement
         while (true) {
             long startTime = System.nanoTime();
 
@@ -141,7 +160,7 @@ class EmuJdk {
             long elapsedTime = endTime - startTime;
             if (elapsedTime < FRAME_TIME) {
                 try {
-                    //noinspection BusyWait
+                    // noinspection BusyWait
                     Thread.sleep((FRAME_TIME - elapsedTime) / 1000_000);
                 } catch (InterruptedException e) {
                     log.warning(() -> "%s".formatted(e.getMessage()));
