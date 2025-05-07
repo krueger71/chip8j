@@ -13,7 +13,7 @@ import java.util.logging.Logger;
  */
 class EmuJdk {
     public static final int INSTRUCTIONS_PER_FRAME = 20;
-    public static final int SCALE = 30;
+    public static final int SCALE = 10;
     public static final int FPS = 60;
     private static final Logger log = Logger.getLogger(EmuJdk.class.getName());
     private final Chip8 chip8;
@@ -62,8 +62,6 @@ class EmuJdk {
 
         var component = new JComponent() {
 
-            private boolean skala;
-
             @Override
             public void paint(Graphics g) {
                 var graphics = (Graphics2D) g;
@@ -82,8 +80,8 @@ class EmuJdk {
                     }
                 }
 
-                graphics.scale(1.0/SCALE, 1.0/SCALE);
-                graphics.setColor(Color.DARK_GRAY);
+                graphics.scale(1.0 / SCALE, 1.0 / SCALE);
+                graphics.setColor(new Color(64, 64, 64, 64));
 
                 for (var y = 0; y < (Chip8.DISPLAY_HEIGHT * SCALE); y += SCALE) {
                     graphics.drawLine(0, y, Chip8.DISPLAY_WIDTH * SCALE, y);
